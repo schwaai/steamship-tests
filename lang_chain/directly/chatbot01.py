@@ -1,9 +1,11 @@
 from langchain import LLMChain, PromptTemplate
 from steamship import Steamship
-
 # from langchain import OpenAI
 from steamship_langchain import OpenAI
+import steamship_langchain as ssl
+from steamship_langchain.llms import OpenAIChat
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.chains.
 from steamship_langchain.memory import ChatMessageHistory
 
 import logging
@@ -18,25 +20,27 @@ Assistant is constantly learning and improving, and its capabilities are constan
 
 Overall, Assistant is a powerful tool that can help with a wide range of tasks and provide valuable insights and information on a wide range of topics. Whether you need help with a specific question or just want to have a conversation about a particular topic, Assistant is here to assist.
 
-{history}
+############-{history}-####################
 Human: {human_input}
 Assistant:"""
 client = Steamship()
 prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-chat_memory = ChatMessageHistory(client=client, key="chat-test")
+chat_memory = ChatMessageHistory(client=client, key="gierughpieruqgrqa")
 
 chatgpt_chain = LLMChain(
-    llm=OpenAI(client=client, temperature=0),
+    llm=OpenAIChat(client=client, model_name="gpt-4", temperature=0),
     prompt=prompt,
     verbose=True,
     memory=ConversationBufferWindowMemory(chat_memory=chat_memory, k=2),
+
 )
 
-chatgpt_chain.predict(
+response = chatgpt_chain.predict(
     human_input="I want you to act as a Linux terminal. I will type commands and you will reply with what the "
                 "terminal should show. I want you to only reply wiht the terminal output inside one unique code "
                 "block, and nothing else. Do not write explanations. Do not type commands unless I instruct you to do "
                 "so. When I need to tell you something in English I will do so by putting text inside curly brackets "
                 "{like this}. My first command is pwd. "
 )
+pass
