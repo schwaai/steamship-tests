@@ -5,7 +5,7 @@ from steamship_langchain import OpenAI
 import steamship_langchain as ssl
 from steamship_langchain.llms import OpenAIChat
 from langchain.chains.conversation.memory import ConversationBufferWindowMemory
-from langchain.chains.
+#from langchain.chains.
 from steamship_langchain.memory import ChatMessageHistory
 
 import logging
