@@ -30,11 +30,20 @@ conversation about a particular topic, Assistant is here to assist.
 
 ############-{history}-####################
 Human: {human_input}
-Assistant:"""
+Assistant: """
 client = Steamship()
 prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
 
-chat_memory = ChatMessageHistory(client=client, key="gierughpieruqgrqa")
+import string
+import random
+
+# initializing size of string
+N = 10
+
+# using random.choices()
+# generating random strings
+rand_key = ''.join(random.choices(string.ascii_lowercase, k=N))
+chat_memory = ChatMessageHistory(client=client, key=rand_key)
 
 chatgpt_chain = LLMChain(
     llm=OpenAIChat(client=client, model_name="gpt-4", temperature=0),
@@ -45,10 +54,17 @@ chatgpt_chain = LLMChain(
 )
 
 response = chatgpt_chain.predict(
-    human_input="I want you to act as a Linux terminal. I will type commands and you will reply with what the "
-                "terminal should show. I want you to only reply with the terminal output inside one unique code "
-                "block, and nothing else. Do not write explanations. Do not type commands unless I instruct you to do "
-                "so. When I need to tell you something in English I will do so by putting text inside curly brackets "
+    human_input="I want you to act as a Linux terminal. I will type commands and you will reply with what the \n"
+                "terminal should show. I want you to only reply with the terminal output inside one unique code \n"
+                "block, and nothing else. Do not write explanations. Do not type commands unless I instruct you to do \n"
+                "so. When I need to tell you something in English I will do so by putting text inside curly brackets \n"
                 "{like this}. My first command is pwd. "
 )
-pass
+while True:
+    human_input = input("Enter your command or 'exit' to quit: ")
+    if human_input.strip().lower() == 'exit':
+        break
+    else:
+        response = chatgpt_chain.predict(human_input=human_input)
+        print(response)
+
