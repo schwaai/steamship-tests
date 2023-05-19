@@ -4,7 +4,7 @@ from steamship import Steamship
 from steamship_langchain import OpenAI
 import steamship_langchain as ssl
 from steamship_langchain.llms import OpenAIChat
-from langchain.chains.conversation.memory import ConversationBufferWindowMemory
+from langchain.memory import ConversationTokenBufferMemory, CombinedMemory, ConversationSummaryMemory, ConversationBufferWindowMemory
 #from langchain.chains.
 from steamship_langchain.memory import ChatMessageHistory
 
@@ -28,12 +28,18 @@ Overall, Assistant is a powerful tool that can help with a wide range of tasks a
 information on a wide range of topics. Whether you need help with a specific question or just want to have a 
 conversation about a particular topic, Assistant is here to assist.
 
-############-{history}-####################
-Human: {human_input}
-Assistant: """
-client = Steamship()
-prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
+Summary of conversation-
+{history}
 
+User: {human_input}
+MyAppAI: """
+# Current scope of conversation
+# {chat_history_lines}
+
+client = Steamship()
+
+prompt = PromptTemplate(input_variables=["history", "human_input"], template=template)
+# prompt = PromptTemplate(input_variables=["history", "human_input", "chat_history_lines"], template=template)
 import string
 import random
 
@@ -45,11 +51,27 @@ N = 10
 rand_key = ''.join(random.choices(string.ascii_lowercase, k=N))
 chat_memory = ChatMessageHistory(client=client, key=rand_key)
 
+llm=OpenAIChat(client=client, model_name="gpt-4", temperature=0)
+#llm = OpenAI(client=client, temperature=0)
+conv_memory=ConversationTokenBufferMemory(llm=llm,
+                                          max_token_limit=120,
+                                          return_messages=True,
+                                          memory_key="chat_history_lines",
+                                          ai_prefix='MyAppAI',
+                                          human_prefix='User')
+summary_memory=ConversationSummaryMemory(llm=llm,
+                                         input_key="input")
+
+memory = ConversationBufferWindowMemory(chat_memory=chat_memory, k=2)
+
+# Combined
+#memory = CombinedMemory(memories=[conv_memory, summary_memory])
+
 chatgpt_chain = LLMChain(
-    llm=OpenAIChat(client=client, model_name="gpt-4", temperature=0),
+    llm=llm,
     prompt=prompt,
     verbose=True,
-    memory=ConversationBufferWindowMemory(chat_memory=chat_memory, k=2),
+    memory=memory
 
 )
 
@@ -68,3 +90,4 @@ while True:
         response = chatgpt_chain.predict(human_input=human_input)
         print(response)
 
+print(response)
